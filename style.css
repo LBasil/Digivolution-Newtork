@@ -1,0 +1,87 @@
+:root {
+  --bg: #05070f;
+  --panel: rgba(20,30,60,0.85);
+  --border: rgba(120,160,255,0.3);
+  --text: #eaf0ff;
+  --muted: #a0b0ff;
+  --accent: #7dd3fc;
+  --obtained: #4ade80;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: radial-gradient(circle at top, #0c1340, var(--bg));
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+/* ===== Header ===== */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+#completion {
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Network ===== */
+#network {
+  position: relative;
+}
+#graph {
+  display: flex;
+  flex-direction: column;
+  gap: 80px;
+  position: relative;
+  z-index: 2;
+}
+#links {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ===== Levels ===== */
+.level {
+  display: flex;
+  justify-content: center;
+  gap: 56px;
+}
+
+/* ===== Digimon Card ===== */
+.digimon {
+  width: 220px;
+  padding: 14px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(30,45,90,0.95), rgba(15,25,60,0.95));
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+.digimon:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 15px 45px rgba(0,0,0,0.6), 0 0 20px rgba(125,211,252,0.3);
+}
+.digimon.obtained {
+  border-color: var(--obtained);
+  box-shadow: 0 0 25px rgba(74,222,128,0.6);
+}
+
+/* ===== Card Text ===== */
+.name { font-weight: 600; font-size: 16px; }
+.stage { font-size: 12px; color: var(--muted); }
+.method { margin-top: 8px; font-size: 11px; opacity: 0.85; }
