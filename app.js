@@ -1,117 +1,164 @@
+/* =====================================================
+   DOM references
+===================================================== */
+
 const graph = document.getElementById("graph");
 const svg = document.getElementById("links");
-const completion = document.getElementById("completion");
+const completionLabel = document.getElementById("completion");
 
-/* ===============================
-   LocalStorage for obtained Digimon
-================================ */
-const STORAGE_KEY = "digivolution_obtained";
-const obtained = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"));
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify([...obtained])); }
-function updateCompletion(){
-  const total = Object.keys(DIGIMONS).length;
-  completion.textContent = Math.floor(obtained.size/total*100)+"%";
-}
+/* =====================================================
+   LocalStorage
+===================================================== */
 
-/* ===============================
-   Find root Digimons
-================================ */
-function getRoots(){
+const STORAGE_KEY = "digivolution-progress";
+let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+
+/* =====================================================
+   Helpers
+===================================================== */
+
+function getRoots() {
   const children = new Set();
-  Object.values(DIGIMONS).forEach(d=>d.evolvesTo.forEach(c=>children.add(c)));
-  return Object.keys(DIGIMONS).filter(id=>!children.has(id));
+  Object.values(DIGIMONS).forEach(d =>
+    d.evolvesTo.forEach(c => children.add(c))
+  );
+  return Object.keys(DIGIMONS).filter(id => !children.has(id));
 }
 
-/* ===============================
-   Compute levels (depth by stage)
-================================ */
-function computeLevels(){
-  const levels={};
-  const visited=new Set();
-  function walk(id,depth){
-    if(!levels[depth]) levels[depth]=[];
-    if(!levels[depth].includes(id)) levels[depth].push(id);
-    if(visited.has(id)) return;
+function computeLevels() {
+  const levels = {};
+  const visited = new Set();
+
+  function walk(id, depth) {
+    if (!levels[depth]) levels[depth] = [];
+    if (!levels[depth].includes(id)) levels[depth].push(id);
+
+    if (visited.has(id)) return;
     visited.add(id);
-    DIGIMONS[id].evolvesTo.forEach(child=>walk(child,depth+1));
+
+    DIGIMONS[id].evolvesTo.forEach(child =>
+      walk(child, depth + 1)
+    );
   }
-  getRoots().forEach(root=>walk(root,0));
+
+  getRoots().forEach(root => walk(root, 0));
   return levels;
 }
 
-/* ===============================
-   Create a Digimon card
-================================ */
-function createCard(id){
-  const d=DIGIMONS[id];
-  const el=document.createElement("div");
-  el.className="digimon";
-  if(obtained.has(id)) el.classList.add("obtained");
-  el.innerHTML=`
+/* =====================================================
+   Rendering
+===================================================== */
+
+function createCard(id) {
+  const d = DIGIMONS[id];
+  const card = document.createElement("div");
+  card.className = "digimon";
+  if (completed[id]) card.classList.add("completed");
+
+  card.innerHTML = `
     <div class="name">${d.name}</div>
     <div class="stage">${d.stage}</div>
-    <div class="method">${d.method}</div>`;
-  el.addEventListener("click",()=>{
-    el.classList.toggle("obtained");
-    obtained.has(id)?obtained.delete(id):obtained.add(id);
-    save(); updateCompletion();
+    <div class="method">${d.method || ""}</div>
+  `;
+
+  card.addEventListener("click", () => {
+    completed[id] = !completed[id];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+    renderGraph();
   });
-  return el;
+
+  return card;
 }
 
-/* ===============================
-   Draw SVG paths between parent and children
-================================ */
-function drawLinks(nodes){
-  svg.innerHTML="";
-  const box = svg.getBoundingClientRect();
+function renderGraph() {
+  graph.innerHTML = "";
+  svg.innerHTML = "";
 
-  Object.entries(DIGIMONS).forEach(([id,d])=>{
-    const from=nodes[id]; if(!from) return;
-    d.evolvesTo.forEach(childId=>{
-      const to=nodes[childId]; if(!to) return;
-      const a=from.getBoundingClientRect();
-      const b=to.getBoundingClientRect();
-      const x1=a.left+a.width/2-box.left;
-      const y1=a.bottom-box.top;
-      const x2=b.left+b.width/2-box.left;
-      const y2=b.top-box.top;
+  const levels = computeLevels();
+  const nodes = {};
 
-      const path=document.createElementNS("http://www.w3.org/2000/svg","path");
-      path.setAttribute("d",`M ${x1} ${y1} C ${x1} ${y1+50}, ${x2} ${y2-50}, ${x2} ${y2}`);
-      path.setAttribute("stroke","rgba(125,211,252,0.5)");
-      path.setAttribute("stroke-width","2");
-      path.setAttribute("fill","none");
+  Object.values(levels).forEach(level => {
+    const row = document.createElement("div");
+    row.className = "level";
+
+    level.forEach(id => {
+      const card = createCard(id);
+      row.appendChild(card);
+      nodes[id] = card;
+    });
+
+    graph.appendChild(row);
+  });
+
+  updateCompletion();
+  requestAnimationFrame(() => drawLinks(nodes));
+}
+
+/* =====================================================
+   SVG links
+===================================================== */
+
+function drawLinks(nodes) {
+  svg.innerHTML = "";
+
+  const rect = svg.getBoundingClientRect();
+  svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+
+  Object.entries(DIGIMONS).forEach(([id, d]) => {
+    const from = nodes[id];
+    if (!from) return;
+
+    d.evolvesTo.forEach(childId => {
+      const to = nodes[childId];
+      if (!to) return;
+
+      const a = from.getBoundingClientRect();
+      const b = to.getBoundingClientRect();
+
+      const x1 = a.left + a.width / 2 - rect.left;
+      const y1 = a.bottom - rect.top;
+      const x2 = b.left + b.width / 2 - rect.left;
+      const y2 = b.top - rect.top;
+
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute(
+        "d",
+        `M ${x1} ${y1}
+         C ${x1} ${y1 + 40},
+           ${x2} ${y2 - 40},
+           ${x2} ${y2}`
+      );
+      path.setAttribute("stroke", "var(--branch-color)");
+      path.setAttribute("stroke-width", "2");
+      path.setAttribute("fill", "none");
+
       svg.appendChild(path);
     });
   });
 }
 
-/* ===============================
-   Render the graph level by level
-================================ */
-function renderGraph(){
-  const levels = computeLevels();
-  graph.innerHTML="";
-  const nodes={};
+/* =====================================================
+   Completion
+===================================================== */
 
-  Object.keys(levels).forEach(depth=>{
-    const row=document.createElement("div");
-    row.className="level";
-    levels[depth].forEach(id=>{
-      const card=createCard(id);
-      row.appendChild(card);
-      nodes[id]=card;
-    });
-    graph.appendChild(row);
-  });
-
-  // Wait one frame to ensure layout is rendered before drawing links
-  requestAnimationFrame(()=>drawLinks(nodes));
+function updateCompletion() {
+  const total = Object.keys(DIGIMONS).length;
+  const done = Object.values(completed).filter(Boolean).length;
+  completionLabel.textContent = `${Math.round((done / total) * 100)}%`;
 }
 
-/* ===============================
+/* =====================================================
+   Responsive redraw
+===================================================== */
+
+let resizeTimeout;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(renderGraph, 100);
+});
+
+/* =====================================================
    Init
-================================ */
+===================================================== */
+
 renderGraph();
-updateCompletion();
