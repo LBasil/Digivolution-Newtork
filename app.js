@@ -14,6 +14,12 @@ const STORAGE_KEY = "digivolution-progress";
 let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
 /* =====================================================
+   UI state
+===================================================== */
+
+let expanded = {};
+
+/* =====================================================
    Helpers
 ===================================================== */
 
@@ -29,23 +35,24 @@ function computeLevels() {
   const levels = {};
   const visited = new Set();
 
-function walk(id, depth) {
-  if (!DIGIMONS[id]) {
-    console.error("Digimon manquant :", id);
-    return;
+  function walk(id, depth) {
+    if (!DIGIMONS[id]) {
+      console.error("Digimon manquant :", id);
+      return;
+    }
+
+    if (!levels[depth]) levels[depth] = [];
+    if (!levels[depth].includes(id)) levels[depth].push(id);
+
+    if (visited.has(id)) return;
+    visited.add(id);
+
+    if (expanded[id]) {
+      DIGIMONS[id].evolvesTo.forEach(child =>
+        walk(child, depth + 1)
+      );
+    }
   }
-
-  if (!levels[depth]) levels[depth] = [];
-  if (!levels[depth].includes(id)) levels[depth].push(id);
-
-  if (visited.has(id)) return;
-  visited.add(id);
-
-  DIGIMONS[id].evolvesTo.forEach(child =>
-    walk(child, depth + 1)
-  );
-}
-
 
   getRoots().forEach(root => walk(root, 0));
   return levels;
@@ -59,7 +66,10 @@ function createCard(id) {
   const d = DIGIMONS[id];
   const card = document.createElement("div");
   card.className = "digimon";
+
   if (completed[id]) card.classList.add("completed");
+  if (d.evolvesTo.length) card.classList.add("has-children");
+  if (expanded[id]) card.classList.add("expanded");
 
   card.innerHTML = `
     <div class="name">${d.name}</div>
@@ -67,9 +77,13 @@ function createCard(id) {
     <div class="method">${d.method || ""}</div>
   `;
 
-  card.addEventListener("click", () => {
-    completed[id] = !completed[id];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+  card.addEventListener("click", (e) => {
+    if (e.shiftKey) {
+      completed[id] = !completed[id];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+    } else {
+      expanded[id] = !expanded[id];
+    }
     renderGraph();
   });
 
@@ -111,6 +125,8 @@ function drawLinks(nodes) {
   svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
 
   Object.entries(DIGIMONS).forEach(([id, d]) => {
+    if (!expanded[id]) return;
+
     const from = nodes[id];
     if (!from) return;
 
