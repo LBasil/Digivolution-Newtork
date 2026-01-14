@@ -62,6 +62,8 @@ function computeLevels() {
    Rendering
 ===================================================== */
 
+let ignoreNextTap = false; // GLOBAL FLAG
+
 function createCard(id) {
   const d = DIGIMONS[id];
   const card = document.createElement("div");
@@ -78,12 +80,13 @@ function createCard(id) {
   `;
 
   let longPressTimer = null;
-  let longPressTriggered = false;
 
-  function startPress() {
-    longPressTriggered = false;
+  function startPress(e) {
+    e.preventDefault();
+    ignoreNextTap = false;
+
     longPressTimer = setTimeout(() => {
-      longPressTriggered = true;
+      ignoreNextTap = true; // empêche le toggle expanded
       completed[id] = !completed[id];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
       renderGraph();
@@ -95,22 +98,32 @@ function createCard(id) {
     longPressTimer = null;
   }
 
-  card.addEventListener("mousedown", startPress);
-  card.addEventListener("touchstart", startPress);
-
-  card.addEventListener("mouseup", () => {
-    if (!longPressTriggered) {
+  function handleTap() {
+    if (!ignoreNextTap) {
       expanded[id] = !expanded[id];
       renderGraph();
     }
-    cancelPress();
-  });
+    ignoreNextTap = false; // reset
+  }
 
+  card.addEventListener("mousedown", startPress);
+  card.addEventListener("mouseup", () => {
+    cancelPress();
+    handleTap();
+  });
   card.addEventListener("mouseleave", cancelPress);
-  card.addEventListener("touchend", cancelPress);
+
+  card.addEventListener("touchstart", startPress, { passive: false });
+  card.addEventListener("touchmove", cancelPress);
+  card.addEventListener("touchend", () => {
+    cancelPress();
+    handleTap();
+  });
+  card.addEventListener("touchcancel", cancelPress);
 
   return card;
 }
+
 
 
 function renderGraph() {
