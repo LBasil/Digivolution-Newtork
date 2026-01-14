@@ -29,17 +29,23 @@ function computeLevels() {
   const levels = {};
   const visited = new Set();
 
-  function walk(id, depth) {
-    if (!levels[depth]) levels[depth] = [];
-    if (!levels[depth].includes(id)) levels[depth].push(id);
-
-    if (visited.has(id)) return;
-    visited.add(id);
-
-    DIGIMONS[id].evolvesTo.forEach(child =>
-      walk(child, depth + 1)
-    );
+function walk(id, depth) {
+  if (!DIGIMONS[id]) {
+    console.error("Digimon manquant :", id);
+    return;
   }
+
+  if (!levels[depth]) levels[depth] = [];
+  if (!levels[depth].includes(id)) levels[depth].push(id);
+
+  if (visited.has(id)) return;
+  visited.add(id);
+
+  DIGIMONS[id].evolvesTo.forEach(child =>
+    walk(child, depth + 1)
+  );
+}
+
 
   getRoots().forEach(root => walk(root, 0));
   return levels;
