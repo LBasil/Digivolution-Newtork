@@ -3,8 +3,6 @@
  * Each Digimon knows only its direct evolutions.
  */
 const DIGIMONS = {
-  agumon: { name:"Agumon", stage:"Rookie", evolvesTo:["greymon","tyrannomon"], method:"High ATK" },
-  gabumon: { name:"Gabumon", stage:"Rookie", evolvesTo:["garurumon"], method:"Speed + Bond" },
   greymon: { name:"Greymon", stage:"Champion", evolvesTo:[], method:"—" },
   tyrannomon: { name:"Tyrannomon", stage:"Champion", evolvesTo:[], method:"Heavy weight" },
   garurumon: { name:"Garurumon", stage:"Champion", evolvesTo:[], method:"High speed" },
@@ -29,5 +27,19 @@ const DIGIMONS = {
   kokomon: { name:"Kokomon", stage:"In-Training", evolvesTo:["lopmon","demiDevimon", "shamamon", "toyAgumonBlack", "wormmon"], method:"HP + Discipline" },
   tsunemon: { name:"Tsunemon", stage:"In-Training", evolvesTo:["keramon", "toyAgumonBlack", "agumonBlack", "gabumonBlack", "tsukaimon"], method:"Time" },
   nyaromon: { name:"Nyaromon", stage:"In-Training", evolvesTo:["salamon","snowAgumon", "renamon", "biyomon", "lucemon"], method:"HP + Discipline" },
-  bukamon: { name:"Bukamon", stage:"In-Training", evolvesTo:["gomamon","veemon", "snowGoblimon", "clearAgumon", "gumdramon"], method:"HP + Discipline" }
+  bukamon: { name:"Bukamon", stage:"In-Training", evolvesTo:["gomamon","veemon", "snowGoblimon", "clearAgumon", "gumdramon"], method:"HP + Discipline" },
+  agumon: { name:"Agumon", stage:"Rookie", evolvesTo:["greymon","tyrannomon", "meramon", "greymonBlue"], method:"High ATK" },
+  gabumon: { name:"Gabumon", stage:"Rookie", evolvesTo:["garurumon", "gaoGamon", "garurumonBlack", "seadramon"], method:"Speed + Bond" },
+  biyomon: { name:"Biyomon", stage:"Rookie", evolvesTo:["birdramon", "piddomon", "redVeedreamon", "youjomon"], method:"Speed + Bond" },
+  patamon: { name:"Patamon", stage:"Rookie", evolvesTo:["angemon", "piddomon", "veedreamon", "growlmonOrange"], method:"Speed + Bond" },
+  tentomon: { name:"Tentomon", stage:"Rookie", evolvesTo:["kabuterimon", "redVegiemon", "woodmon", "bomberNanimon"], method:"Speed + Bond" },
+  gomamon: { name:"Gomamon", stage:"Rookie", evolvesTo:["ikkakumon", "seadreamon", "icemon", "sorcemon"], method:"Speed + Bond" },
+  palmon: { name:"Palmon", stage:"Rookie", evolvesTo:["togemon", "woodmon", "vegiemon", "redVegiemon"], method:"Speed + Bond" },
+  salamon: { name:"Salamon", stage:"Rookie", evolvesTo:["gatomon", "blackGatomon", "gargomon", "meicoomon"], method:"Speed + Bond" },
+  veemon: { name:"Veemon", stage:"Rookie", evolvesTo:["exVeemon", "veedreamon", "meramon", "goldVeedramon"], method:"Speed + Bond" },
+  wormmon: { name:"Gabumon", stage:"Rookie", evolvesTo:["stingmon", "kuwagamon", "kabuterimon", "devimon"], method:"Speed + Bond" },
+  guilmon: { name:"Guilmon", stage:"Rookie", evolvesTo:["growlmon", "growlmonOrange", "tyrannomon", "redVeedramon"], method:"Speed + Bond" },
+  terriermon: { name:"Terriermon", stage:"Rookie", evolvesTo:["gargomon", "ikkakumon", "angemon", "ogremon"], method:"Speed + Bond" },
+  lopmon: { name:"Lopmon", stage:"Rookie", evolvesTo:["turuiemon", "kyubimonSilver", "wizardmon", "blackGatomon"], method:"Speed + Bond" },
+  renamon: { name:"Gabumon", stage:"Rookie", evolvesTo:["kyubimon", "kyubimonSilver", "turuiemon", "leomon"], method:"Speed + Bond" }
 };
