@@ -77,18 +77,41 @@ function createCard(id) {
     <div class="method">${d.method || ""}</div>
   `;
 
-  card.addEventListener("click", (e) => {
-    if (e.shiftKey) {
+  let longPressTimer = null;
+  let longPressTriggered = false;
+
+  function startPress() {
+    longPressTriggered = false;
+    longPressTimer = setTimeout(() => {
+      longPressTriggered = true;
       completed[id] = !completed[id];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
-    } else {
+      renderGraph();
+    }, 500);
+  }
+
+  function cancelPress() {
+    clearTimeout(longPressTimer);
+    longPressTimer = null;
+  }
+
+  card.addEventListener("mousedown", startPress);
+  card.addEventListener("touchstart", startPress);
+
+  card.addEventListener("mouseup", () => {
+    if (!longPressTriggered) {
       expanded[id] = !expanded[id];
+      renderGraph();
     }
-    renderGraph();
+    cancelPress();
   });
+
+  card.addEventListener("mouseleave", cancelPress);
+  card.addEventListener("touchend", cancelPress);
 
   return card;
 }
+
 
 function renderGraph() {
   graph.innerHTML = "";
