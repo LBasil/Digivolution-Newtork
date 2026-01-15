@@ -82,12 +82,11 @@ function createCard(id) {
   card.innerHTML = `
     <div class="name">${d.name}</div>
     <div class="stage">${d.stage}</div>
-    ${
-      methods.length
-        ? `<ul class="method">
+    ${methods.length
+      ? `<ul class="method">
             ${methods.map(m => `<li>${m}</li>`).join("")}
           </ul>`
-        : ""
+      : ""
     }
   `;
 
