@@ -73,10 +73,22 @@ function createCard(id) {
   if (d.evolvesTo.length) card.classList.add("has-children");
   if (expanded[id]) card.classList.add("expanded");
 
+  const methods = Array.isArray(d.method)
+    ? d.method
+    : d.method
+      ? [d.method]
+      : [];
+
   card.innerHTML = `
     <div class="name">${d.name}</div>
     <div class="stage">${d.stage}</div>
-    <div class="method">${d.method || ""}</div>
+    ${
+      methods.length
+        ? `<ul class="method">
+            ${methods.map(m => `<li>${m}</li>`).join("")}
+          </ul>`
+        : ""
+    }
   `;
 
   let longPressTimer = null;
