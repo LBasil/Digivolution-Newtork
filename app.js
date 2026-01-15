@@ -105,6 +105,9 @@ function createCard(id) {
     : d.method ? [d.method] : [];
 
   card.innerHTML = `
+    <div class="icon">
+    <img src="${d.icon || './assets/placeholder.png'}" alt="${d.name}" />
+    </div>
     <div class="name">${d.name}</div>
     <div class="stage">${d.stage}</div>
     ${methods.length

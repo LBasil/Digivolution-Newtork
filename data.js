@@ -1,10 +1,11 @@
 /**
  * Simple JSON defining Digivolution.
  * Each Digimon knows only its direct evolutions.
+ * Icons: https://www.hiclipart.com/free-transparent-background-png-clipart-viify
  */
 const DIGIMONS = {
   botamon: { name: "Botamon", stage: "Baby", evolvesTo: ["koromon"], method: "-" },
-  punimon: { name: "Punimon", stage: "Baby", evolvesTo: ["tsunomon"], method: "-" },
+  punimon: { name: "Punimon", stage: "Baby", evolvesTo: ["tsunomon"], method: "-", icon:'./assets/punimon.png' },
   poyomon: { name: "Poyomon", stage: "Baby", evolvesTo: ["tokomon"], method: "-" },
   conomon: { name: "Conomon", stage: "Baby", evolvesTo: ["kokomon"], method: "-" },
   yukimiBotamon: { name: "YukimiBotamon", stage: "Baby", evolvesTo: ["nyaromon"], method: "-" },
