@@ -1,5 +1,6 @@
 /* =====================================================
-   DOM references
+  DOM references
+  We keep direct references to the main UI elements
 ===================================================== */
 
 const graph = document.getElementById("graph");
@@ -7,46 +8,65 @@ const svg = document.getElementById("links");
 const completionLabel = document.getElementById("completion");
 
 /* =====================================================
-   LocalStorage
+  LocalStorage
+  Stores which Digimon are marked as "completed"
 ===================================================== */
 
 const STORAGE_KEY = "digivolution-progress";
 let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
 /* =====================================================
-   UI state
+  UI State
+  - expanded: which Digimon branches are currently opened
 ===================================================== */
 
 let expanded = {};
 
 /* =====================================================
-   Helpers
+  Helpers – Graph structure
 ===================================================== */
 
+/**
+ * Returns Digimon IDs that have no parent.
+ * Those are the roots of the digivolution trees.
+ */
 function getRoots() {
   const children = new Set();
+
   Object.values(DIGIMONS).forEach(d =>
-    d.evolvesTo.forEach(c => children.add(c))
+    d.evolvesTo.forEach(id => children.add(id))
   );
+
   return Object.keys(DIGIMONS).filter(id => !children.has(id));
 }
 
+/**
+ * Computes which Digimon should appear on each vertical level.
+ * Only expanded branches are traversed.
+ */
 function computeLevels() {
   const levels = {};
   const visited = new Set();
 
   function walk(id, depth) {
     if (!DIGIMONS[id]) {
-      console.error("Digimon manquant :", id);
+      console.error("Missing Digimon:", id);
       return;
     }
 
+    // Create the level if it doesn't exist
     if (!levels[depth]) levels[depth] = [];
-    if (!levels[depth].includes(id)) levels[depth].push(id);
 
+    // Prevent duplicates on the same level
+    if (!levels[depth].includes(id)) {
+      levels[depth].push(id);
+    }
+
+    // Prevent infinite loops
     if (visited.has(id)) return;
     visited.add(id);
 
+    // Only continue if this Digimon is expanded
     if (expanded[id]) {
       DIGIMONS[id].evolvesTo.forEach(child =>
         walk(child, depth + 1)
@@ -54,30 +74,35 @@ function computeLevels() {
     }
   }
 
+  // Start traversal from roots
   getRoots().forEach(root => walk(root, 0));
+
   return levels;
 }
 
 /* =====================================================
-   Rendering
+  Rendering – Cards
 ===================================================== */
 
-let ignoreNextTap = false; // GLOBAL FLAG
+let ignoreNextTap = false; // Used to separate tap from long-press
 
+/**
+ * Creates a Digimon card DOM element.
+ */
 function createCard(id) {
   const d = DIGIMONS[id];
   const card = document.createElement("div");
   card.className = "digimon";
 
+  // Visual states
   if (completed[id]) card.classList.add("completed");
   if (d.evolvesTo.length) card.classList.add("has-children");
   if (expanded[id]) card.classList.add("expanded");
 
+  // Normalize methods (string or array → array)
   const methods = Array.isArray(d.method)
     ? d.method
-    : d.method
-      ? [d.method]
-      : [];
+    : d.method ? [d.method] : [];
 
   card.innerHTML = `
     <div class="name">${d.name}</div>
@@ -90,6 +115,12 @@ function createCard(id) {
     }
   `;
 
+  /* -----------------------------------------------------
+    Interaction logic
+    - Tap: expand / collapse branch
+    - Long press: toggle completion
+  ----------------------------------------------------- */
+
   let longPressTimer = null;
 
   function startPress(e) {
@@ -97,9 +128,11 @@ function createCard(id) {
     ignoreNextTap = false;
 
     longPressTimer = setTimeout(() => {
-      ignoreNextTap = true; // empêche le toggle expanded
+      ignoreNextTap = true;
+
       completed[id] = !completed[id];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+
       renderGraph();
     }, 500);
   }
@@ -114,9 +147,10 @@ function createCard(id) {
       expanded[id] = !expanded[id];
       renderGraph();
     }
-    ignoreNextTap = false; // reset
+    ignoreNextTap = false;
   }
 
+  // Mouse events
   card.addEventListener("mousedown", startPress);
   card.addEventListener("mouseup", () => {
     cancelPress();
@@ -124,6 +158,7 @@ function createCard(id) {
   });
   card.addEventListener("mouseleave", cancelPress);
 
+  // Touch events
   card.addEventListener("touchstart", startPress, { passive: false });
   card.addEventListener("touchmove", cancelPress);
   card.addEventListener("touchend", () => {
@@ -135,8 +170,13 @@ function createCard(id) {
   return card;
 }
 
+/* =====================================================
+  Rendering – Graph layout
+===================================================== */
 
-
+/**
+ * Renders all visible Digimon cards and connections.
+ */
 function renderGraph() {
   graph.innerHTML = "";
   svg.innerHTML = "";
@@ -162,9 +202,13 @@ function renderGraph() {
 }
 
 /* =====================================================
-   SVG links
+  SVG Links – Visual connections between Digimon
 ===================================================== */
 
+/**
+ * Draws curved SVG links between expanded Digimon
+ * and their visible children.
+ */
 function drawLinks(nodes) {
   svg.innerHTML = "";
 
@@ -189,14 +233,19 @@ function drawLinks(nodes) {
       const x2 = b.left + b.width / 2 - rect.left;
       const y2 = b.top - rect.top;
 
-      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      const path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+
       path.setAttribute(
         "d",
         `M ${x1} ${y1}
-         C ${x1} ${y1 + 40},
-           ${x2} ${y2 - 40},
-           ${x2} ${y2}`
+        C ${x1} ${y1 + 40},
+          ${x2} ${y2 - 40},
+          ${x2} ${y2}`
       );
+
       path.setAttribute("stroke", "var(--branch-color)");
       path.setAttribute("stroke-width", "2");
       path.setAttribute("fill", "none");
@@ -207,7 +256,7 @@ function drawLinks(nodes) {
 }
 
 /* =====================================================
-   Completion
+  Completion indicator
 ===================================================== */
 
 function updateCompletion() {
@@ -217,7 +266,7 @@ function updateCompletion() {
 }
 
 /* =====================================================
-   Responsive redraw
+  Responsive redraw
 ===================================================== */
 
 let resizeTimeout;
@@ -227,7 +276,7 @@ window.addEventListener("resize", () => {
 });
 
 /* =====================================================
-   Init
+  Init
 ===================================================== */
 
 renderGraph();
