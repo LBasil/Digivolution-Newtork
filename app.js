@@ -21,6 +21,7 @@ let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
 let expanded = {};
 let ignoreNextTap = false;
+let lineageColors = {};
 
 /* =====================================================
   Reverse graph (parents)
@@ -47,25 +48,35 @@ function getRoots() {
   return Object.keys(DIGIMONS).filter(id => !children.has(id));
 }
 
+function colorFromSeed(seed) {
+  const hue = (seed * 137.508) % 360; // golden angle
+  return `hsl(${hue}, 70%, 60%)`;
+}
+
 function computeLevels() {
   const levels = {};
   const visited = new Set();
 
-  function walk(id, depth) {
+  function walk(id, depth, colorSeed) {
     if (!levels[depth]) levels[depth] = [];
     if (!levels[depth].includes(id)) levels[depth].push(id);
+
+    if (!lineageColors[id]) {
+      lineageColors[id] = colorFromSeed(colorSeed);
+    }
 
     if (visited.has(id)) return;
     visited.add(id);
 
     if (expanded[id]) {
-      DIGIMONS[id].evolvesTo.forEach(child =>
-        walk(child, depth + 1)
-      );
+      DIGIMONS[id].evolvesTo.forEach((child, index) => {
+        // 🔀 divergence = nouvelle couleur
+        walk(child, depth + 1, colorSeed + index + 1);
+      });
     }
   }
 
-  getRoots().forEach(root => walk(root, 0));
+  getRoots().forEach((root, i) => walk(root, 0, i * 10));
   return levels;
 }
 
@@ -98,6 +109,11 @@ function createCard(id) {
         ${methods.map(m => `<li>${m}</li>`).join("")}
       </ul>` : ""}
   `;
+
+  card.style.setProperty(
+    "--lineage-color",
+    lineageColors[id] || "var(--branch-color)"
+  );
 
   let timer = null;
 
@@ -194,7 +210,10 @@ function drawLinks(nodes) {
 
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1+40}, ${x2} ${y2-40}, ${x2} ${y2}`);
-      path.setAttribute("stroke", "var(--branch-color)");
+      path.setAttribute(
+        "stroke",
+        lineageColors[id] || "var(--branch-color)"
+      );
       path.setAttribute("stroke-width", "2");
       path.setAttribute("fill", "none");
 
