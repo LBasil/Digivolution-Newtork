@@ -108,6 +108,9 @@ function createCard(id) {
       <ul class="method">
         ${methods.map(m => `<li>${m}</li>`).join("")}
       </ul>` : ""}
+    <div class="completion-badge">
+      ${completed[id] ? "✓" : "○"}
+    </div>
   `;
 
   card.style.setProperty(
