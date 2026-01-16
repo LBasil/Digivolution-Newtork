@@ -26,7 +26,7 @@ const DIGIMONS = {
   tsumemon: { name: "Tsumemon", stage: "In-Training", evolvesTo: ["keramon", "toyAgumonBlack", "agumonBlack", "gabumonBlack", "tsukaimon"], method: ["Time"] , icon: "./assets/tsumemon.png" },
   nyaromon: { name: "Nyaromon", stage: "In-Training", evolvesTo: ["salamon", "snowAgumon", "renamon", "biyomon", "lucemon"], method: ["Time"] , icon: "./assets/nyaromon.png" },
   bukamon: { name: "Bukamon", stage: "In-Training", evolvesTo: ["gomamon", "veemon", "snowGoblimon", "clearAgumon", "gumdramon"], method: ["Time"] , icon: "./assets/bukamon.png" },
-  agumon: { name: "Agumon", stage: "Rookie", evolvesTo: ["greymon", "tyrannomon", "meramon", "greymonBlue", "numemon", "geremon"], method: ["HP >= 1900", "STR >= 890", "KEY PTS = 2"] },
+  agumon: { name: "Agumon", stage: "Rookie", evolvesTo: ["greymon", "tyrannomon", "meramon", "greymonBlue", "numemon", "geremon"], method: ["HP >= 1900", "STR >= 890", "KEY PTS = 2"], icon: "./assets/agumon.png" },
   gabumon: { name: "Gabumon", stage: "Rookie", evolvesTo: ["garurumon", "gaoGamon", "garurumonBlack", "seadramon", "numemon", "geremon"], method: "-" , icon: "./assets/gabumon.png" },
   biyomon: { name: "Biyomon", stage: "Rookie", evolvesTo: ["birdramon", "piddomon", "redVeedramon", "youkomon", "numemon", "geremon"], method: "-" , icon: "./assets/biyomon.png" },
   patamon: { name: "Patamon", stage: "Rookie", evolvesTo: ["angemon", "piddomon", "veedramon", "growlmonOrange", "numemon", "geremon"], method: "-" , icon: "./assets/patamon.png" },
