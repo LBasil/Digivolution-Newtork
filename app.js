@@ -190,6 +190,7 @@ function drawLinks(nodes) {
   svg.innerHTML = "";
   const rect = svg.getBoundingClientRect();
   svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
+  let newCard;
 
   Object.entries(DIGIMONS).forEach(([id, d]) => {
     if (!expanded[id]) return;
@@ -218,7 +219,11 @@ function drawLinks(nodes) {
       path.setAttribute("fill", "none");
 
       svg.appendChild(path);
+      newCard = to;
     });
+  });
+  requestAnimationFrame(() => {
+    if (newCard) newCard.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 }
 
