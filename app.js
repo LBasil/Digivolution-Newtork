@@ -1,72 +1,63 @@
 /* =====================================================
   DOM references
-  We keep direct references to the main UI elements
 ===================================================== */
 
 const graph = document.getElementById("graph");
 const svg = document.getElementById("links");
 const completionLabel = document.getElementById("completion");
+const searchInput = document.getElementById("searchInput");
+const searchBtn = document.getElementById("searchBtn");
 
 /* =====================================================
   LocalStorage
-  Stores which Digimon are marked as "completed"
 ===================================================== */
 
 const STORAGE_KEY = "digivolution-progress";
 let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
 /* =====================================================
-  UI State
-  - expanded: which Digimon branches are currently opened
+  UI state
 ===================================================== */
 
 let expanded = {};
+let ignoreNextTap = false;
 
 /* =====================================================
-  Helpers – Graph structure
+  Reverse graph (parents)
 ===================================================== */
 
-/**
- * Returns Digimon IDs that have no parent.
- * Those are the roots of the digivolution trees.
- */
+const PARENTS = {};
+
+Object.entries(DIGIMONS).forEach(([id, d]) => {
+  d.evolvesTo.forEach(child => {
+    if (!PARENTS[child]) PARENTS[child] = [];
+    PARENTS[child].push(id);
+  });
+});
+
+/* =====================================================
+  Helpers
+===================================================== */
+
 function getRoots() {
   const children = new Set();
-
   Object.values(DIGIMONS).forEach(d =>
     d.evolvesTo.forEach(id => children.add(id))
   );
-
   return Object.keys(DIGIMONS).filter(id => !children.has(id));
 }
 
-/**
- * Computes which Digimon should appear on each vertical level.
- * Only expanded branches are traversed.
- */
 function computeLevels() {
   const levels = {};
   const visited = new Set();
 
   function walk(id, depth) {
-    if (!DIGIMONS[id]) {
-      console.error("Missing Digimon:", id);
-      return;
-    }
-
-    // Create the level if it doesn't exist
     if (!levels[depth]) levels[depth] = [];
+    if (!levels[depth].includes(id)) levels[depth].push(id);
 
-    // Prevent duplicates on the same level
-    if (!levels[depth].includes(id)) {
-      levels[depth].push(id);
-    }
-
-    // Prevent infinite loops
     if (visited.has(id)) return;
     visited.add(id);
 
-    // Only continue if this Digimon is expanded
     if (expanded[id]) {
       DIGIMONS[id].evolvesTo.forEach(child =>
         walk(child, depth + 1)
@@ -74,78 +65,60 @@ function computeLevels() {
     }
   }
 
-  // Start traversal from roots
   getRoots().forEach(root => walk(root, 0));
-
   return levels;
 }
 
 /* =====================================================
-  Rendering – Cards
+  Card creation
 ===================================================== */
 
-let ignoreNextTap = false; // Used to separate tap from long-press
-
-/**
- * Creates a Digimon card DOM element.
- */
 function createCard(id) {
   const d = DIGIMONS[id];
   const card = document.createElement("div");
   card.className = "digimon";
+  card.dataset.id = id;
 
-  // Visual states
   if (completed[id]) card.classList.add("completed");
   if (d.evolvesTo.length) card.classList.add("has-children");
   if (expanded[id]) card.classList.add("expanded");
 
-  // Normalize methods (string or array → array)
   const methods = Array.isArray(d.method)
     ? d.method
     : d.method ? [d.method] : [];
 
   card.innerHTML = `
     <div class="icon">
-    <img src="${d.icon || './assets/placeholder.png'}" alt="${d.name}" />
+      <img src="${d.icon || "./assets/placeholder.png"}" alt="${d.name}">
     </div>
     <div class="name">${d.name}</div>
     <div class="stage">${d.stage}</div>
-    ${methods.length
-      ? `<ul class="method">
-            ${methods.map(m => `<li>${m}</li>`).join("")}
-          </ul>`
-      : ""
-    }
+    ${methods.length ? `
+      <ul class="method">
+        ${methods.map(m => `<li>${m}</li>`).join("")}
+      </ul>` : ""}
   `;
 
-  /* -----------------------------------------------------
-    Interaction logic
-    - Tap: expand / collapse branch
-    - Long press: toggle completion
-  ----------------------------------------------------- */
-
-  let longPressTimer = null;
+  let timer = null;
 
   function startPress(e) {
     e.preventDefault();
     ignoreNextTap = false;
 
-    longPressTimer = setTimeout(() => {
+    timer = setTimeout(() => {
       ignoreNextTap = true;
-
       completed[id] = !completed[id];
       localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
-
       renderGraph();
     }, 500);
   }
 
   function cancelPress() {
-    clearTimeout(longPressTimer);
-    longPressTimer = null;
+    clearTimeout(timer);
+    timer = null;
   }
 
-  function handleTap() {
+  function tap() {
     if (!ignoreNextTap) {
       expanded[id] = !expanded[id];
       renderGraph();
@@ -153,33 +126,22 @@ function createCard(id) {
     ignoreNextTap = false;
   }
 
-  // Mouse events
   card.addEventListener("mousedown", startPress);
-  card.addEventListener("mouseup", () => {
-    cancelPress();
-    handleTap();
-  });
+  card.addEventListener("mouseup", () => { cancelPress(); tap(); });
   card.addEventListener("mouseleave", cancelPress);
 
-  // Touch events
   card.addEventListener("touchstart", startPress, { passive: false });
   card.addEventListener("touchmove", cancelPress);
-  card.addEventListener("touchend", () => {
-    cancelPress();
-    handleTap();
-  });
+  card.addEventListener("touchend", () => { cancelPress(); tap(); });
   card.addEventListener("touchcancel", cancelPress);
 
   return card;
 }
 
 /* =====================================================
-  Rendering – Graph layout
+  Rendering
 ===================================================== */
 
-/**
- * Renders all visible Digimon cards and connections.
- */
 function renderGraph() {
   graph.innerHTML = "";
   svg.innerHTML = "";
@@ -193,8 +155,8 @@ function renderGraph() {
 
     level.forEach(id => {
       const card = createCard(id);
-      row.appendChild(card);
       nodes[id] = card;
+      row.appendChild(card);
     });
 
     graph.appendChild(row);
@@ -205,27 +167,21 @@ function renderGraph() {
 }
 
 /* =====================================================
-  SVG Links – Visual connections between Digimon
+  SVG links
 ===================================================== */
 
-/**
- * Draws curved SVG links between expanded Digimon
- * and their visible children.
- */
 function drawLinks(nodes) {
   svg.innerHTML = "";
-
   const rect = svg.getBoundingClientRect();
   svg.setAttribute("viewBox", `0 0 ${rect.width} ${rect.height}`);
 
   Object.entries(DIGIMONS).forEach(([id, d]) => {
     if (!expanded[id]) return;
-
     const from = nodes[id];
     if (!from) return;
 
-    d.evolvesTo.forEach(childId => {
-      const to = nodes[childId];
+    d.evolvesTo.forEach(child => {
+      const to = nodes[child];
       if (!to) return;
 
       const a = from.getBoundingClientRect();
@@ -236,19 +192,8 @@ function drawLinks(nodes) {
       const x2 = b.left + b.width / 2 - rect.left;
       const y2 = b.top - rect.top;
 
-      const path = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-
-      path.setAttribute(
-        "d",
-        `M ${x1} ${y1}
-        C ${x1} ${y1 + 40},
-          ${x2} ${y2 - 40},
-          ${x2} ${y2}`
-      );
-
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1+40}, ${x2} ${y2-40}, ${x2} ${y2}`);
       path.setAttribute("stroke", "var(--branch-color)");
       path.setAttribute("stroke-width", "2");
       path.setAttribute("fill", "none");
@@ -259,7 +204,7 @@ function drawLinks(nodes) {
 }
 
 /* =====================================================
-  Completion indicator
+  Completion
 ===================================================== */
 
 function updateCompletion() {
@@ -267,6 +212,50 @@ function updateCompletion() {
   const done = Object.values(completed).filter(Boolean).length;
   completionLabel.textContent = `${Math.round((done / total) * 100)}%`;
 }
+
+/* =====================================================
+  Search
+===================================================== */
+
+function expandParents(id) {
+  if (!PARENTS[id]) return;
+  PARENTS[id].forEach(parent => {
+    expanded[parent] = true;
+    expandParents(parent);
+  });
+}
+
+function searchDigimon() {
+  const q = searchInput.value.trim().toLowerCase();
+  if (!q) return;
+
+  const entry = Object.entries(DIGIMONS).find(
+    ([_, d]) => d.name.toLowerCase() === q
+  );
+
+  if (!entry) {
+    alert("Digimon not found");
+    return;
+  }
+
+  expanded = {};
+  const [id] = entry;
+
+  expandParents(id);
+  expanded[id] = true;
+
+  renderGraph();
+
+  requestAnimationFrame(() => {
+    const card = document.querySelector(`[data-id="${id}"]`);
+    if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
+
+searchBtn.addEventListener("click", searchDigimon);
+searchInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") searchDigimon();
+});
 
 /* =====================================================
   Responsive redraw

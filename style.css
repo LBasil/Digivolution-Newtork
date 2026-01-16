@@ -15,7 +15,7 @@
 
 body {
   margin: 0;
-  padding: 24px;
+  padding: 16px;
   min-height: 100vh;
   background: var(--bg-main);
   color: var(--text-main);
@@ -28,21 +28,58 @@ body {
 
 header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 header h1 {
-  font-size: 22px;
+  font-size: 18px;
   margin: 0;
 }
 
 #completion {
+  align-self: flex-start;
   padding: 6px 14px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   font-size: 14px;
+}
+
+/* =====================================================
+   Search
+===================================================== */
+
+.search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.search input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.search input::placeholder {
+  color: var(--text-muted);
+}
+
+.search button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.search button:active {
+  transform: scale(0.96);
 }
 
 /* =====================================================
@@ -69,7 +106,7 @@ header h1 {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(56px, 8vw, 96px);
+  gap: clamp(48px, 8vw, 96px);
 }
 
 /* =====================================================
@@ -80,7 +117,7 @@ header h1 {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: clamp(16px, 4vw, 56px);
+  gap: clamp(12px, 4vw, 56px);
   flex-wrap: wrap;
 }
 
@@ -96,11 +133,11 @@ header h1 {
   border: 1px solid var(--card-border);
   cursor: pointer;
   position: relative;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.digimon:hover {
-  transform: translateY(-4px);
+.digimon:active {
+  transform: scale(0.97);
 }
 
 .digimon.completed {
@@ -119,24 +156,9 @@ header h1 {
   content: "▴";
 }
 
-.digimon .name {
-  font-weight: 600;
-}
-
-.digimon .stage {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.digimon .method {
-  font-size: 11px;
-  margin-top: 6px;
-  color: var(--text-muted);
-}
-
 .digimon .icon {
-  width: 50px;
-  height: 50px;
+  width: 48px;
+  height: 48px;
   margin: 0 auto 8px auto;
 }
 
@@ -147,27 +169,20 @@ header h1 {
   border-radius: 8px;
 }
 
+.digimon .name {
+  font-weight: 600;
+  text-align: center;
+}
 
-/* =====================================================
-   Responsive
-===================================================== */
+.digimon .stage {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
 
-@media (max-width: 600px) {
-  body {
-    padding: 12px;
-  }
-
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  header h1 {
-    font-size: 18px;
-  }
-
-  .digimon {
-    width: 90%;
-  }
+.digimon .method {
+  font-size: 11px;
+  margin-top: 6px;
+  color: var(--text-muted);
+  padding-left: 16px;
 }

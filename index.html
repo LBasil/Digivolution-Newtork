@@ -1,21 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Digimon Digivolution Graph</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header>
-      <h1>Digimon World: Next Order – Digivolution Tree</h1>
-      <div id="completion">0%</div>
-    </header>
-    <div id="network">
-      <svg id="links"></svg>
-      <div id="graph"></div>
-    </div>
-    <script src="data.js"></script>
-    <script src="app.js"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>Digimon Digivolution Graph</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <h1>Digimon World: Next Order – Digivolution Tree</h1>
+  <div id="completion">0%</div>
+</header>
+
+<!-- 🔎 SEARCH BAR -->
+<div class="search">
+  <input
+    id="searchInput"
+    type="text"
+    placeholder="Search a Digimon (e.g. Greymon)"
+  />
+  <button id="searchBtn">Search</button>
+</div>
+
+<div id="network">
+  <svg id="links"></svg>
+  <div id="graph"></div>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
 </html>
