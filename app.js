@@ -7,6 +7,7 @@ const svg = document.getElementById("links");
 const completionLabel = document.getElementById("completion");
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
+const autocomplete = document.getElementById("autocomplete");
 
 /* =====================================================
   LocalStorage
@@ -35,6 +36,16 @@ Object.entries(DIGIMONS).forEach(([id, d]) => {
     PARENTS[child].push(id);
   });
 });
+
+/* =====================================================
+  Digimon List for autocompletion
+===================================================== */
+
+const DIGIMON_LIST = Object.entries(DIGIMONS).map(([id, d]) => ({
+  id,
+  name: d.name
+}));
+
 
 /* =====================================================
   Helpers
@@ -283,6 +294,50 @@ searchBtn.addEventListener("click", searchDigimon);
 searchInput.addEventListener("keydown", e => {
   if (e.key === "Enter") searchDigimon();
 });
+
+searchInput.addEventListener("input", updateAutocomplete);
+document.addEventListener("click", e => {
+  if (!autocomplete.contains(e.target) && e.target !== searchInput) {
+    autocomplete.innerHTML = "";
+  }
+});
+
+function updateAutocomplete() {
+  const q = searchInput.value.trim().toLowerCase();
+  autocomplete.innerHTML = "";
+
+  if (!q) return;
+
+  const matches = DIGIMON_LIST.filter(d =>
+    d.name.toLowerCase().includes(q)
+  ).slice(0, 6);
+
+  const list = document.createElement("div");
+  list.className = "autocomplete-list";
+
+  if (!matches.length) {
+    const empty = document.createElement("div");
+    empty.className = "autocomplete-empty";
+    empty.textContent = "No Digimon found";
+    list.appendChild(empty);
+  } else {
+    matches.forEach(d => {
+      const item = document.createElement("div");
+      item.className = "autocomplete-item";
+      item.textContent = d.name;
+
+      item.addEventListener("click", () => {
+        searchInput.value = d.name;
+        autocomplete.innerHTML = "";
+        searchDigimon();
+      });
+
+      list.appendChild(item);
+    });
+  }
+
+  autocomplete.appendChild(list);
+}
 
 /* =====================================================
   Responsive redraw
