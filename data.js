@@ -1,7 +1,7 @@
 /**
  * Simple JSON defining Digivolution.
  * Each Digimon knows only its direct evolutions.
- * Icons: https://www.hiclipart.com/free-transparent-background-png-clipart-viify
+ * Icons, Stats, Names and Method: https://www.grindosaur.com/en/games/digimon-world-next-order/digimon
  */
 const DIGIMONS = {
   botamon: { name: "Botamon", stage: "Baby", evolvesTo: ["koromon"], method: "-" , icon: "./assets/botamon.png" },
