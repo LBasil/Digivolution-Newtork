@@ -23,6 +23,27 @@ let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 let expanded = {};
 let ignoreNextTap = false;
 let lineageColors = {};
+let focusFilterEnabled =
+  JSON.parse(localStorage.getItem("focus-filter-enabled")) ?? true;
+
+let visibleSet = null;
+const focusCheckbox = document.getElementById("focusFilter");
+focusCheckbox.checked = focusFilterEnabled;
+
+focusCheckbox.addEventListener("change", () => {
+  focusFilterEnabled = focusCheckbox.checked;
+  localStorage.setItem(
+    "focus-filter-enabled",
+    JSON.stringify(focusFilterEnabled)
+  );
+
+  if (!focusFilterEnabled) {
+    visibleSet = null;
+  }
+
+  renderGraph();
+});
+
 
 /* =====================================================
   Reverse graph (parents)
@@ -91,6 +112,32 @@ function computeLevels() {
   return levels;
 }
 
+function collectParents(id, set) {
+  if (!PARENTS[id]) return;
+  PARENTS[id].forEach(p => {
+    if (!set.has(p)) {
+      set.add(p);
+      collectParents(p, set);
+    }
+  });
+}
+
+function collectChildren(id, set) {
+  DIGIMONS[id].evolvesTo.forEach(c => {
+    if (!set.has(c)) {
+      set.add(c);
+      collectChildren(c, set);
+    }
+  });
+}
+
+function buildVisibleSetFrom(id) {
+  const set = new Set([id]);
+  collectParents(id, set);
+  collectChildren(id, set);
+  return set;
+}
+
 /* =====================================================
   Card creation
 ===================================================== */
@@ -151,10 +198,16 @@ function createCard(id) {
   function tap() {
     if (!ignoreNextTap) {
       expanded[id] = !expanded[id];
+
+      if (focusFilterEnabled) {
+        visibleSet = buildVisibleSetFrom(id);
+      }
+
       renderGraph();
     }
     ignoreNextTap = false;
   }
+
 
   card.addEventListener("mousedown", startPress);
   card.addEventListener("mouseup", () => { cancelPress(); tap(); });
@@ -184,6 +237,8 @@ function renderGraph() {
     row.className = "level";
 
     level.forEach(id => {
+      if (visibleSet && !visibleSet.has(id)) return;
+
       const card = createCard(id);
       nodes[id] = card;
       row.appendChild(card);
@@ -224,7 +279,7 @@ function drawLinks(nodes) {
       const y2 = b.top - rect.top;
 
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1+40}, ${x2} ${y2-40}, ${x2} ${y2}`);
+      path.setAttribute("d", `M ${x1} ${y1} C ${x1} ${y1 + 40}, ${x2} ${y2 - 40}, ${x2} ${y2}`);
       path.setAttribute(
         "stroke",
         lineageColors[id] || "var(--branch-color)"
@@ -276,11 +331,17 @@ function searchDigimon() {
     return;
   }
 
-  expanded = {};
   const [id] = entry;
 
+  expanded = {};
   expandParents(id);
   expanded[id] = true;
+
+  if (focusFilterEnabled) {
+    visibleSet = buildVisibleSetFrom(id);
+  } else {
+    visibleSet = null;
+  }
 
   renderGraph();
 

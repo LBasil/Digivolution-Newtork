@@ -260,4 +260,25 @@ header h1 {
   color: var(--text-muted);
 }
 
+/* =====================================================
+   Filters
+===================================================== */
 
+.filters {
+  margin-bottom: 16px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: #2563eb;
+}

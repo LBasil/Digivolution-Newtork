@@ -7,29 +7,26 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-<header>
-  <h1>Digimon World: Next Order – Digivolution Tree</h1>
-  <div id="completion">0%</div>
-</header>
-
-<!-- 🔎 SEARCH BAR -->
-<div class="search">
-  <input
-    id="searchInput"
-    type="text"
-    placeholder="Search a Digimon (e.g. Greymon)"
-  />
-  <button id="searchBtn">Search</button>
-</div>
-<div id="autocomplete"></div>
-
-<div id="network">
-  <svg id="links"></svg>
-  <div id="graph"></div>
-</div>
-
-<script src="data.js"></script>
-<script src="app.js"></script>
+  <header>
+    <h1>Digimon World: Next Order – Digivolution Tree</h1>
+    <div id="completion">0%</div>
+  </header>
+  <div class="search">
+    <input id="searchInput" type="text" placeholder="Search a Digimon (e.g. Greymon)" />
+    <button id="searchBtn">Search</button>
+  </div>
+  <div class="filters">
+    <label class="checkbox">
+      <input type="checkbox" id="focusFilter" checked />
+      <span>Show only relevant digivolution paths</span>
+    </label>
+  </div>
+  <div id="autocomplete"></div>
+  <div id="network">
+    <svg id="links"></svg>
+    <div id="graph"></div>
+  </div>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
