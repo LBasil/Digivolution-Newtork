@@ -157,15 +157,7 @@ function createCard(id) {
     : d.method ? [d.method] : [];
 
   const menthodsLength = methods.length;
-  let keyPtsString = "";
-  let keyPtsValue = 0;
-  if (menthodsLength > 0) {
-    keyPtsString = methods[menthodsLength - 1];
-    const match = keyPtsString.match(/\d+/);
-    if (match) {
-        keyPtsValue = parseInt(keyPtsString.match(/\d+/)[0], 10);
-    }
-  }
+  const keyPtsValue = d.keyPts;
   const stars = "★".repeat(keyPtsValue);
 
   card.innerHTML = `
