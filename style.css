@@ -185,6 +185,11 @@ header h1 {
   padding-left: 16px;
 }
 
+.stars {
+  color: var(--lineage-color);
+  font-size: 20px;
+}
+
 /* =====================================================
    Completion badge
 ===================================================== */

@@ -156,13 +156,26 @@ function createCard(id) {
     ? d.method
     : d.method ? [d.method] : [];
 
+  const menthodsLength = methods.length;
+  let keyPtsString = "";
+  let keyPtsValue = 0;
+  if (menthodsLength > 0) {
+    keyPtsString = methods[menthodsLength - 1];
+    const match = keyPtsString.match(/\d+/);
+    if (match) {
+        keyPtsValue = parseInt(keyPtsString.match(/\d+/)[0], 10);
+    }
+  }
+  const stars = "★".repeat(keyPtsValue);
+
   card.innerHTML = `
     <div class="icon">
       <img src="${d.icon || "./assets/placeholder.png"}" alt="${d.name}">
     </div>
     <div class="name">${d.name}</div>
     <div class="stage">${d.stage}</div>
-    ${methods.length ? `
+    ${menthodsLength ? `
+      <div class="stars">${stars}</div>
       <ul class="method">
         ${methods.map(m => `<li>${m}</li>`).join("")}
       </ul>` : ""}
