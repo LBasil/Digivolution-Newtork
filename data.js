@@ -234,7 +234,7 @@ const DIGIMONS = {
   omegamonAlterB: { name: "Omegamon Alter-B", stage: "Mega DNA", evolvesTo: [], method: ["DNA - Samudramon & Kuzuhamon", "DNA - Titamon & MetalEtemon", "DNA - Arresterdramon & OmniShoutmon"] , icon: "./assets/omegamonalterb.png" },
   gallantmonCM: { name: "Gallantmon CM", stage: "Mega DNA", evolvesTo: [], method: ["DNA - UlforceVeedramon & Gallantmon", "Examon & Gallantmon", "Kentaurosmon & Gallantmon", "ChaosGallantmon & Gallantmon", "Dynasmon & Gallantmon", "Alphamon & Gallantmon", "Jesmon & Gallantmon"] , icon: "./assets/gallantmoncm.png" },
   shineGreymonBM: { name: "ShineGreymon BM", stage: "Mega DNA", evolvesTo: [], method: ["DNA - ShineyGreymon & MirageGaogamon"] , icon: "./assets/shinegreymonbm.png" },
-  rosemonBurstMode: { name: "Rosemon Burst Mode", stage: "Mega DNA", evolvesTo: [], method: ['DNA - Sakuyamon & Rosemon', "DNA - Ophanimon & Rosemon", "DNA - Mastermon & Rosemon", "DNA - Dianamon & Rosemon"] , icon: "./assets/rosemonburstmode.png" },
+  rosemonBurstMode: { name: "Rosemon Burst Mode", stage: "Mega DNA", evolvesTo: [], method: ['DNA - Sakuyamon & Rosemon', "DNA - Ophanimon & Rosemon", "DNA - Mastemon & Rosemon", "DNA - Dianamon & Rosemon"] , icon: "./assets/rosemonburstmode.png" },
   chaosmon: { name: "Chaosmon", stage: "Mega DNA", evolvesTo: [], method: ["DNA - BanchoLeomon & Darkdramon"] , icon: "./assets/chaosmon.png" },
   boltboutamon: { name: "Boltboutamon", stage: "Mega DNA", evolvesTo: [], method: ["DNA - Myotismon & Piedmon"] , icon: "./assets/boltboutamon.png" }
 };
