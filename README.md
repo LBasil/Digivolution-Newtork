@@ -1,4 +1,4 @@
-# 🧬 Digimon Digivolution Graph
+# Digimon Digivolution Graph
 
 An interactive, visual Digimon digivolution tree built with **vanilla JavaScript**, **HTML**, **CSS**, and **SVG**.
 
@@ -14,7 +14,7 @@ This README explains **everything**, from architecture to rendering, for someone
 
 ---
 
-## 🧠 Core Concept
+## Core Concept
 
 Digimon evolution trees are **not linear**:
 
@@ -22,7 +22,7 @@ Digimon evolution trees are **not linear**:
 * Some Digimon have multiple parents
 * Showing everything at once becomes unreadable
 
-### 👉 Solution
+### Solution
 
 We use a **progressive tree**:
 
@@ -32,7 +32,7 @@ We use a **progressive tree**:
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
 ```text
 index.html      # Main HTML structure
@@ -43,7 +43,7 @@ app.js          # Logic, rendering, interactions
 
 ---
 
-## 🧱 index.html
+## index.html
 
 ### Responsibilities
 
@@ -65,7 +65,7 @@ The SVG is positioned **above the graph** using CSS, but ignores pointer events.
 
 ---
 
-## 🎨 style.css
+## style.css
 
 ### Design Goals
 
@@ -89,7 +89,7 @@ The SVG is positioned **above the graph** using CSS, but ignores pointer events.
 
 ---
 
-## 🧠 data.js
+## data.js
 
 Contains a global constant:
 
@@ -113,7 +113,7 @@ agumon: {
 
 ---
 
-## 🧠 app.js – Global Architecture
+## app.js – Global Architecture
 
 The logic is split into **clear layers**:
 
@@ -129,7 +129,7 @@ State
 
 ---
 
-## 🧠 State Management
+## State Management
 
 ### Expanded branches
 
@@ -150,7 +150,7 @@ Persisted in `localStorage`, so progress survives reloads.
 
 ---
 
-## 🌳 Tree Computation
+## Tree Computation
 
 ### Root Detection
 
@@ -205,7 +205,7 @@ createCard(id)
 
 ---
 
-## 🧩 SVG Rendering (Most Important Part)
+## SVG Rendering (Most Important Part)
 
 ### Why SVG?
 
@@ -234,7 +234,7 @@ This creates organic, tree‑like branches.
 
 ---
 
-## 📐 Coordinate Conversion
+## Coordinate Conversion
 
 HTML uses **viewport coordinates**.
 SVG uses **its own coordinate system**.
@@ -249,7 +249,7 @@ This lets us convert screen pixels → SVG units exactly.
 
 ---
 
-## 📊 Completion Indicator
+## Completion Indicator
 
 ```js
 updateCompletion()
@@ -260,7 +260,7 @@ updateCompletion()
 
 ---
 
-## 📱 Mobile Considerations
+## Mobile Considerations
 
 ### Challenges
 
@@ -282,7 +282,7 @@ Future ideas:
 
 ---
 
-## 🧪 Why redraw everything?
+## Why redraw everything?
 
 Instead of updating parts of the graph:
 
@@ -300,7 +300,7 @@ Cost:
 
 ---
 
-## 🏁 Final Notes
+## Final Notes
 
 This project intentionally avoids:
 
@@ -316,7 +316,7 @@ Why?
 
 ---
 
-## 🚀 Possible Next Evolutions
+## Possible Next Evolutions
 
 * Animation when expanding branches
 * Search by Digimon name
