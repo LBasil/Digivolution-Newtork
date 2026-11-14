@@ -32,6 +32,14 @@ We use a **progressive tree**:
 
 ---
 
+## Tests
+
+`data.js` is checked by dependency-free tests: every evolution points to an existing Digimon, every icon file exists, no Digimon evolves into itself, and every Digimon can be reached from a Baby. Two Digimon (Sukamon, PlatinumSukamon) have no parent in the data yet and are listed as known exceptions.
+
+```bash
+node --test
+```
+
 ## Project Structure
 
 ```text
@@ -183,7 +191,7 @@ Result:
 
 ---
 
-## 🃏 Digimon Cards
+## Digimon Cards
 
 Each card is generated dynamically:
 
