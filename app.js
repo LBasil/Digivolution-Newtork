@@ -14,7 +14,16 @@ const autocomplete = document.getElementById("autocomplete");
 ===================================================== */
 
 const STORAGE_KEY = "digivolution-progress";
-let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+function readStored(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return value ?? fallback;
+  } catch (e) {
+    return fallback; // JSON corrompu ou stockage indisponible : on repart d'un état vide
+  }
+}
+
+let completed = readStored(STORAGE_KEY, {});
 
 /* =====================================================
   UI state
@@ -23,8 +32,7 @@ let completed = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 let expanded = {};
 let ignoreNextTap = false;
 let lineageColors = {};
-let focusFilterEnabled =
-  JSON.parse(localStorage.getItem("focus-filter-enabled")) ?? true;
+let focusFilterEnabled = readStored("focus-filter-enabled", true);
 
 let visibleSet = null;
 const focusCheckbox = document.getElementById("focusFilter");
