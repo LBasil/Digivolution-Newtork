@@ -38,12 +38,88 @@ header h1 {
   margin: 0;
 }
 
-#completion {
-  align-self: flex-start;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
+.progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 420px;
+}
+
+.progress-text {
   font-size: 14px;
+  color: var(--text-muted);
+}
+
+.progress-text #completion {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+#progressFill {
+  height: 100%;
+  width: 0;
+  background: #22c55e;
+  transition: width 0.3s ease;
+}
+
+/* =====================================================
+   Help panel
+===================================================== */
+
+.help {
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 14px;
+}
+
+.help summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.help ol {
+  margin: 10px 0 2px;
+  padding-left: 20px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.help strong {
+  color: var(--text-main);
+}
+
+.search-message {
+  min-height: 1.2em;
+  margin: -8px 0 8px;
+  font-size: 13px;
+  color: #fca5a5;
+}
+
+.link-button {
+  margin-left: 16px;
+  background: none;
+  border: none;
+  color: #93c5fd;
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 /* =====================================================
@@ -196,11 +272,11 @@ header h1 {
 
 .completion-badge {
   position: absolute;
-  bottom: 10px;
-  right: 12px;
+  top: 8px;
+  left: 8px;
 
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
 
   display: flex;
@@ -215,8 +291,22 @@ header h1 {
   border: 2px solid var(--lineage-color);
   background: rgba(0, 0, 0, 0.25);
 
-  pointer-events: none;
+  cursor: pointer;
+  padding: 0;
   user-select: none;
+}
+
+.completion-badge:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.digimon:focus-visible,
+.completion-badge:focus-visible,
+.autocomplete-item:focus-visible,
+.link-button:focus-visible,
+.search button:focus-visible {
+  outline: 2px solid #93c5fd;
+  outline-offset: 2px;
 }
 
 /* Completed state */
@@ -249,7 +339,14 @@ header h1 {
 }
 
 .autocomplete-item {
+  display: block;
+  width: 100%;
   padding: 12px 14px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: inherit;
+  font-family: inherit;
   cursor: pointer;
   font-size: 14px;
 }

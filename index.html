@@ -14,25 +14,41 @@
 </head>
 <body>
   <header>
-    <h1>Digimon World: Next Order – Digivolution Tree</h1>
-    <div id="completion">0%</div>
+    <h1 data-i18n="title">Digimon World: Next Order – Digivolution Tree</h1>
+    <div class="progress" aria-live="polite">
+      <div class="progress-text"><span id="completion">0 / 0</span> <span id="completionPercent"></span></div>
+      <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progressFill"></div></div>
+    </div>
   </header>
+
+  <details class="help" id="help" open>
+    <summary data-i18n="helpTitle">How it works</summary>
+    <ol>
+      <li data-i18n="help1">Every Digimon starts as a Baby. <strong>Click a card</strong> to see what it can digivolve into.</li>
+      <li data-i18n="help2">Click the <strong>circle</strong> at the bottom right of a card to mark it as obtained. Your progress is saved in this browser.</li>
+      <li data-i18n="help3">Under the name, the list shows the <strong>conditions</strong> your partner needs to digivolve into that Digimon. Stars (★) are its key points.</li>
+      <li data-i18n="help4">Looking for a specific Digimon? Use the search to see its full evolution line.</li>
+    </ol>
+  </details>
+
   <div class="search">
-    <input id="searchInput" type="text" placeholder="Search a Digimon (e.g. Greymon)" />
-    <button id="searchBtn">Search</button>
+    <input id="searchInput" type="text" data-i18n-placeholder="searchPlaceholder" placeholder="Search a Digimon (e.g. Greymon)" aria-label="Search a Digimon" autocomplete="off" />
+    <button id="searchBtn" data-i18n="search">Search</button>
   </div>
+  <p id="searchMessage" class="search-message" role="status"></p>
+  <div id="autocomplete"></div>
   <div class="filters">
     <label class="checkbox">
       <input type="checkbox" id="focusFilter" checked />
-      <span>Show only relevant digivolution paths</span>
+      <span data-i18n="focus">Focus: only show the selected Digimon's line</span>
     </label>
+    <button id="collapseBtn" class="link-button" type="button" data-i18n="collapse">Collapse everything</button>
   </div>
-  <div id="autocomplete"></div>
   <div id="network">
-    <svg id="links"></svg>
+    <svg id="links" aria-hidden="true"></svg>
     <div id="graph"></div>
   </div>
-  <script src="data.js"></script>
+<script src="data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

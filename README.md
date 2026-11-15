@@ -201,15 +201,17 @@ createCard(id)
 
 ### Interaction Model
 
-| Action             | Result                   |
-| ------------------ | ------------------------ |
-| Tap                | Expand / collapse branch |
-| Long press (500ms) | Toggle completion        |
+| Action                        | Result                   |
+| ----------------------------- | ------------------------ |
+| Click / tap a card            | Expand / collapse branch |
+| Click the circle on a card    | Toggle "obtained"        |
+| Enter / Space on a focused card | Expand / collapse branch |
 
-### Why long press?
+### Why a visible button instead of a long press?
 
-* Mobile has no right‑click
-* Prevents accidental completion toggles
+* A long press is invisible: first-time users never find it
+* A real `<button>` is reachable by keyboard and announced by screen readers
+* A "How it works" panel explains the interactions on the first visit
 
 ---
 
@@ -279,7 +281,7 @@ updateCompletion()
 ### Solutions used
 
 * Progressive expansion only
-* Long press instead of buttons
+* A visible completion button on every card
 * Cards stack vertically
 
 Future ideas:
