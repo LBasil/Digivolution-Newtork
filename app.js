@@ -5,9 +5,75 @@
 const graph = document.getElementById("graph");
 const svg = document.getElementById("links");
 const completionLabel = document.getElementById("completion");
+const completionPercent = document.getElementById("completionPercent");
+const progressFill = document.getElementById("progressFill");
+const progressBar = document.querySelector(".progress-bar");
+const searchMessage = document.getElementById("searchMessage");
+const collapseBtn = document.getElementById("collapseBtn");
+const helpPanel = document.getElementById("help");
 const searchInput = document.getElementById("searchInput");
 const searchBtn = document.getElementById("searchBtn");
 const autocomplete = document.getElementById("autocomplete");
+
+/* =====================================================
+  Language (English by default, French if the browser is in French)
+===================================================== */
+
+const STRINGS = {
+  en: {
+    title: "Digimon World: Next Order – Digivolution Tree",
+    helpTitle: "How it works",
+    help1: "Every Digimon starts as a Baby. <strong>Click a card</strong> to see what it can digivolve into.",
+    help2: "Click the <strong>circle</strong> at the bottom right of a card to mark it as obtained. Your progress is saved in this browser.",
+    help3: "Under the name, the list shows the <strong>conditions</strong> your partner needs to digivolve into that Digimon. Stars (★) are its key points.",
+    help4: "Looking for a specific Digimon? Use the search to see its full evolution line.",
+    searchPlaceholder: "Search a Digimon (e.g. Greymon)",
+    search: "Search",
+    focus: "Focus: only show the selected Digimon's line",
+    collapse: "Collapse everything",
+    notFound: "No Digimon named “{q}”. Pick one from the suggestions.",
+    noMatch: "No Digimon found",
+    obtained: "obtained",
+    markObtained: "Mark {name} as obtained",
+    markNotObtained: "Mark {name} as not obtained",
+    conditions: "Conditions",
+    keyPoints: "Key points",
+  },
+  fr: {
+    title: "Digimon World: Next Order – Arbre de digivolution",
+    helpTitle: "Comment ça marche",
+    help1: "Chaque Digimon commence en Baby. <strong>Cliquez sur une carte</strong> pour voir en quoi il peut digivoluer.",
+    help2: "Cliquez sur le <strong>rond</strong> en bas à droite d'une carte pour la marquer comme obtenue. Votre progression est gardée dans ce navigateur.",
+    help3: "Sous le nom, la liste indique les <strong>conditions</strong> que doit remplir votre partenaire pour digivoluer en ce Digimon. Les étoiles (★) sont ses points clés.",
+    help4: "Vous cherchez un Digimon précis ? Utilisez la recherche pour voir toute sa lignée.",
+    searchPlaceholder: "Chercher un Digimon (ex. Greymon)",
+    search: "Chercher",
+    focus: "Focus : n'afficher que la lignée du Digimon choisi",
+    collapse: "Tout replier",
+    notFound: "Aucun Digimon nommé « {q} ». Choisissez-en un dans les suggestions.",
+    noMatch: "Aucun Digimon trouvé",
+    obtained: "obtenus",
+    markObtained: "Marquer {name} comme obtenu",
+    markNotObtained: "Marquer {name} comme non obtenu",
+    conditions: "Conditions",
+    keyPoints: "Points clés",
+  },
+};
+
+const LANG = (navigator.language || "en").toLowerCase().startsWith("fr") ? "fr" : "en";
+const t = (key, vars = {}) =>
+  Object.entries(vars).reduce(
+    (text, [k, v]) => text.replace(`{${k}}`, v),
+    STRINGS[LANG][key] ?? STRINGS.en[key]
+  );
+
+document.documentElement.lang = LANG;
+document.title = t("title");
+document.querySelectorAll("[data-i18n]").forEach(el => (el.innerHTML = t(el.dataset.i18n)));
+document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+  el.placeholder = t(el.dataset.i18nPlaceholder);
+  el.setAttribute("aria-label", el.placeholder);
+});
 
 /* =====================================================
   LocalStorage
@@ -25,12 +91,31 @@ function readStored(key, fallback) {
 
 let completed = readStored(STORAGE_KEY, {});
 
+function saveCompleted() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+  } catch (e) {
+    /* stockage plein ou désactivé : la progression ne sera pas gardée, l'appli reste utilisable */
+  }
+}
+
+// Le panneau d'aide est ouvert à la première visite, puis replié.
+const HELP_KEY = "digivolution-help-seen";
+if (readStored(HELP_KEY, false)) helpPanel.open = false;
+helpPanel.addEventListener("toggle", () => {
+  if (!helpPanel.open) {
+    try { localStorage.setItem(HELP_KEY, "true"); } catch (e) { /* ignoré */ }
+  }
+});
+
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const scrollBehavior = prefersReducedMotion ? "auto" : "smooth";
+
 /* =====================================================
   UI state
 ===================================================== */
 
 let expanded = {};
-let ignoreNextTap = false;
 let lineageColors = {};
 let focusFilterEnabled = readStored("focus-filter-enabled", true);
 
@@ -40,10 +125,9 @@ focusCheckbox.checked = focusFilterEnabled;
 
 focusCheckbox.addEventListener("change", () => {
   focusFilterEnabled = focusCheckbox.checked;
-  localStorage.setItem(
-    "focus-filter-enabled",
-    JSON.stringify(focusFilterEnabled)
-  );
+  try {
+    localStorage.setItem("focus-filter-enabled", JSON.stringify(focusFilterEnabled));
+  } catch (e) { /* ignoré */ }
 
   if (!focusFilterEnabled) {
     visibleSet = null;
@@ -160,28 +244,30 @@ function createCard(id) {
   if (d.evolvesTo.length) card.classList.add("has-children");
   if (expanded[id]) card.classList.add("expanded");
 
-  const methods = Array.isArray(d.method)
-    ? d.method
-    : d.method ? [d.method] : [];
+  const methods = (Array.isArray(d.method) ? d.method : d.method ? [d.method] : [])
+    .filter(m => m && m !== "-"); // "-" = aucune condition : rien à afficher
+  const stars = d.keyPts ? "★".repeat(d.keyPts) : "";
 
-  const menthodsLength = methods.length;
-  const keyPtsValue = d.keyPts;
-  const stars = "★".repeat(keyPtsValue);
+  card.setAttribute("role", "button");
+  card.tabIndex = 0;
+  if (d.evolvesTo.length) card.setAttribute("aria-expanded", expanded[id] ? "true" : "false");
 
   card.innerHTML = `
     <div class="icon">
-      <img src="${d.icon || "./assets/placeholder.png"}" alt="${d.name}">
+      <img src="${d.icon || "./assets/placeholder.png"}" alt="">
     </div>
     <div class="name">${d.name}</div>
     <div class="stage">${d.stage}</div>
-    ${menthodsLength ? `
-      <div class="stars">${stars}</div>
-      <ul class="method">
+    ${stars ? `<div class="stars" title="${t("keyPoints")}">${stars}</div>` : ""}
+    ${methods.length ? `
+      <ul class="method" aria-label="${t("conditions")}">
         ${methods.map(m => `<li>${m}</li>`).join("")}
       </ul>` : ""}
-    <div class="completion-badge">
-      ${completed[id] ? "✓" : "○"}
-    </div>
+    <button type="button" class="completion-badge" aria-pressed="${completed[id] ? "true" : "false"}"
+      aria-label="${t(completed[id] ? "markNotObtained" : "markObtained", { name: d.name })}"
+      title="${t(completed[id] ? "markNotObtained" : "markObtained", { name: d.name })}">
+      ${completed[id] ? "✓" : ""}
+    </button>
   `;
 
   card.style.setProperty(
@@ -189,47 +275,32 @@ function createCard(id) {
     lineageColors[id] || "var(--branch-color)"
   );
 
-  let timer = null;
-
-  function startPress(e) {
-    e.preventDefault();
-    ignoreNextTap = false;
-
-    timer = setTimeout(() => {
-      ignoreNextTap = true;
-      completed[id] = !completed[id];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
-      renderGraph();
-    }, 500);
-  }
-
-  function cancelPress() {
-    clearTimeout(timer);
-    timer = null;
-  }
-
-  function tap() {
-    if (!ignoreNextTap) {
-      expanded[id] = !expanded[id];
-
-      if (focusFilterEnabled) {
-        visibleSet = buildVisibleSetFrom(id);
-      }
-
-      renderGraph();
+  function toggleExpanded() {
+    expanded[id] = !expanded[id];
+    if (focusFilterEnabled) {
+      visibleSet = buildVisibleSetFrom(id);
     }
-    ignoreNextTap = false;
+    renderGraph(id);
   }
 
+  // Un clic sur le rond marque le Digimon comme obtenu ; un clic ailleurs sur la carte la déplie.
+  card.addEventListener("click", e => {
+    if (e.target.closest(".completion-badge")) {
+      completed[id] = !completed[id];
+      saveCompleted();
+      renderGraph(id);
+      return;
+    }
+    toggleExpanded();
+  });
 
-  card.addEventListener("mousedown", startPress);
-  card.addEventListener("mouseup", () => { cancelPress(); tap(); });
-  card.addEventListener("mouseleave", cancelPress);
-
-  card.addEventListener("touchstart", startPress, { passive: false });
-  card.addEventListener("touchmove", cancelPress);
-  card.addEventListener("touchend", () => { cancelPress(); tap(); });
-  card.addEventListener("touchcancel", cancelPress);
+  card.addEventListener("keydown", e => {
+    if (e.target !== card) return; // laisser le bouton du rond gérer ses propres touches
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleExpanded();
+    }
+  });
 
   return card;
 }
@@ -238,7 +309,7 @@ function createCard(id) {
   Rendering
 ===================================================== */
 
-function renderGraph() {
+function renderGraph(focusId) {
   graph.innerHTML = "";
   svg.innerHTML = "";
 
@@ -261,6 +332,8 @@ function renderGraph() {
   });
 
   updateCompletion();
+  // Le rendu recrée toutes les cartes : on redonne le focus à celle qu'on vient d'utiliser.
+  if (focusId && nodes[focusId]) nodes[focusId].focus({ preventScroll: true });
   requestAnimationFrame(() => drawLinks(nodes));
 }
 
@@ -305,7 +378,7 @@ function drawLinks(nodes) {
     });
   });
   requestAnimationFrame(() => {
-    if (newCard) newCard.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (newCard) newCard.scrollIntoView({ behavior: scrollBehavior, block: "center" });
   });
 }
 
@@ -316,7 +389,11 @@ function drawLinks(nodes) {
 function updateCompletion() {
   const total = Object.keys(DIGIMONS).length;
   const done = Object.values(completed).filter(Boolean).length;
-  completionLabel.textContent = `${Math.round((done / total) * 100)}%`;
+  const percent = Math.round((done / total) * 100);
+  completionLabel.textContent = `${done} / ${total} ${t("obtained")}`;
+  completionPercent.textContent = `(${percent} %)`;
+  progressFill.style.width = `${percent}%`;
+  progressBar.setAttribute("aria-valuenow", String(percent));
 }
 
 /* =====================================================
@@ -333,14 +410,18 @@ function expandParents(id) {
 
 function searchDigimon() {
   const q = searchInput.value.trim().toLowerCase();
+  searchMessage.textContent = "";
   if (!q) return;
 
-  const entry = Object.entries(DIGIMONS).find(
-    ([_, d]) => d.name.toLowerCase() === q
-  );
+  const entries = Object.entries(DIGIMONS);
+  // Nom exact d'abord ; sinon, s'il n'y a qu'un seul Digimon dont le nom contient la saisie, on le prend.
+  const partial = entries.filter(([_, d]) => d.name.toLowerCase().includes(q));
+  const entry =
+    entries.find(([_, d]) => d.name.toLowerCase() === q) ||
+    (partial.length === 1 ? partial[0] : null);
 
   if (!entry) {
-    alert("Digimon not found");
+    searchMessage.textContent = t("notFound", { q: searchInput.value.trim() });
     return;
   }
 
@@ -360,7 +441,7 @@ function searchDigimon() {
 
   requestAnimationFrame(() => {
     const card = document.querySelector(`[data-id="${id}"]`);
-    if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (card) card.scrollIntoView({ behavior: scrollBehavior, block: "center" });
   });
 }
 
@@ -369,7 +450,18 @@ searchInput.addEventListener("keydown", e => {
   if (e.key === "Enter") searchDigimon();
 });
 
-searchInput.addEventListener("input", updateAutocomplete);
+searchInput.addEventListener("input", () => {
+  searchMessage.textContent = "";
+  updateAutocomplete();
+});
+
+collapseBtn.addEventListener("click", () => {
+  expanded = {};
+  visibleSet = null;
+  searchMessage.textContent = "";
+  renderGraph();
+  window.scrollTo({ top: 0, behavior: scrollBehavior });
+});
 document.addEventListener("click", e => {
   if (!autocomplete.contains(e.target) && e.target !== searchInput) {
     autocomplete.innerHTML = "";
@@ -392,11 +484,12 @@ function updateAutocomplete() {
   if (!matches.length) {
     const empty = document.createElement("div");
     empty.className = "autocomplete-empty";
-    empty.textContent = "No Digimon found";
+    empty.textContent = t("noMatch");
     list.appendChild(empty);
   } else {
     matches.forEach(d => {
-      const item = document.createElement("div");
+      const item = document.createElement("button");
+      item.type = "button";
       item.className = "autocomplete-item";
       item.textContent = d.name;
 
